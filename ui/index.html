@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LEO AI — Voice Intelligence Platform</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a0f;--bg2:#12121a;--bg3:#1a1a27;--bg4:#22223a;
+  --surface:#16162a;--surface2:#1e1e35;--surface3:#262645;
+  --border:#2a2a4a;--border2:#3a3a5a;
+  --text:#e8e8f0;--text2:#a0a0c0;--text3:#6a6a8a;
+  --accent:#7c5cfc;--accent2:#9b7cff;--accent3:#5a3cd8;
+  --green:#22c55e;--green2:#16a34a;--red:#ef4444;--red2:#dc2626;
+  --amber:#f59e0b;--blue:#3b82f6;--cyan:#06b6d4;--pink:#ec4899;
+  --gradient:linear-gradient(135deg,#7c5cfc 0%,#ec4899 50%,#f59e0b 100%);
+  --gradient2:linear-gradient(135deg,#7c5cfc 0%,#3b82f6 100%);
+  --shadow:0 4px 24px rgba(0,0,0,.4);--shadow2:0 8px 40px rgba(124,92,252,.15);
+  --radius:12px;--radius2:16px;
+}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+a{color:var(--accent2);text-decoration:none}
+/* ── Layout ─────────────────────── */
+.app{display:flex;min-height:100vh}
+.sidebar{width:260px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:transform .3s}
+.sidebar-header{padding:24px 20px;border-bottom:1px solid var(--border)}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-icon{width:40px;height:40px;background:var(--gradient);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff}
+.logo-text{font-size:20px;font-weight:700;letter-spacing:-.5px}
+.logo-text span{background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo-sub{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;margin-top:2px}
+nav{flex:1;padding:12px 8px;overflow-y:auto}
+.nav-section{margin-bottom:8px}
+.nav-section-title{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);padding:8px 12px 4px;font-weight:600}
+.nav-btn{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border:none;background:none;color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;border-radius:8px;transition:all .15s;text-align:left}
+.nav-btn:hover{background:var(--surface);color:var(--text)}
+.nav-btn.active{background:var(--accent);background:var(--gradient2);color:#fff;box-shadow:0 4px 16px rgba(124,92,252,.3)}
+.nav-btn svg{width:18px;height:18px;flex-shrink:0}
+.nav-badge{margin-left:auto;background:var(--accent);color:#fff;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:600}
+.main{margin-left:260px;flex:1;min-height:100vh}
+.topbar{height:64px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 32px;background:var(--bg2);position:sticky;top:0;z-index:50;backdrop-filter:blur(20px)}
+.topbar-title{font-size:18px;font-weight:600}
+.topbar-actions{display:flex;gap:8px;align-items:center}
+.content{padding:28px 32px}
+.tab{display:none}.tab.active{display:block}
+/* ── Components ─────────────────── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius2);padding:24px;box-shadow:var(--shadow)}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.card-title{font-size:15px;font-weight:600;color:var(--text)}
+.card-subtitle{font-size:12px;color:var(--text3);margin-top:2px}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius2);padding:20px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.stat-card.purple::before{background:var(--gradient2)}
+.stat-card.green::before{background:linear-gradient(90deg,var(--green),var(--cyan))}
+.stat-card.amber::before{background:linear-gradient(90deg,var(--amber),var(--pink))}
+.stat-card.blue::before{background:linear-gradient(90deg,var(--blue),var(--accent))}
+.stat-card.red::before{background:linear-gradient(90deg,var(--red),var(--amber))}
+.stat-card.cyan::before{background:linear-gradient(90deg,var(--cyan),var(--green))}
+.stat-label{font-size:12px;color:var(--text3);font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+.stat-value{font-size:28px;font-weight:700;margin-top:4px;letter-spacing:-.5px}
+.stat-sub{font-size:11px;color:var(--text3);margin-top:4px}
+.btn{padding:8px 16px;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;font-family:inherit;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:var(--accent3);box-shadow:var(--shadow2)}
+.btn-success{background:var(--green2);color:#fff}.btn-success:hover{background:var(--green)}
+.btn-danger{background:var(--red2);color:#fff}.btn-danger:hover{background:var(--red)}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}.btn-ghost:hover{background:var(--surface3);color:var(--text)}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-lg{padding:12px 24px;font-size:14px}
+input,select,textarea{width:100%;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,92,252,.15)}
+textarea{resize:vertical;min-height:100px}
+label{display:block;font-size:12px;font-weight:500;color:var(--text2);margin-bottom:6px}
+.form-group{margin-bottom:16px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:10px 14px;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);font-weight:600;border-bottom:1px solid var(--border)}
+td{padding:10px 14px;font-size:13px;border-bottom:1px solid var(--border);color:var(--text2)}
+tr:hover td{background:var(--surface2)}
+.badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;display:inline-block}
+.badge-green{background:rgba(34,197,94,.15);color:var(--green)}
+.badge-red{background:rgba(239,68,68,.15);color:var(--red)}
+.badge-amber{background:rgba(245,158,11,.15);color:var(--amber)}
+.badge-blue{background:rgba(59,130,246,.15);color:var(--blue)}
+.badge-purple{background:rgba(124,92,252,.15);color:var(--accent2)}
+.badge-cyan{background:rgba(6,182,212,.15);color:var(--cyan)}
+.badge-inbound{background:rgba(6,182,212,.15);color:var(--cyan)}
+.badge-outbound{background:rgba(124,92,252,.15);color:var(--accent2)}
+.empty{text-align:center;padding:40px;color:var(--text3);font-size:14px}
+.chart-container{position:relative;height:280px;margin-top:12px}
+.toast{position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:10px;background:var(--green2);color:#fff;font-size:13px;font-weight:500;z-index:9999;opacity:0;transform:translateY(10px);transition:all .3s;box-shadow:var(--shadow)}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.error{background:var(--red2)}
+.direction-toggle{display:flex;gap:4px;background:var(--bg3);padding:3px;border-radius:8px}
+.direction-toggle .toggle-btn{padding:6px 14px;border:none;background:none;color:var(--text3);font-size:12px;font-weight:500;cursor:pointer;border-radius:6px;transition:all .15s}
+.direction-toggle .toggle-btn.active{background:var(--accent);color:#fff}
+.tab-filter{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+@media(max-width:768px){.sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.main{margin-left:0}.content{padding:16px}.form-row{grid-template-columns:1fr}.stat-grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<!-- ═══ Sidebar ═══ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">
+      <div class="logo-icon">L</div>
+      <div><div class="logo-text"><span>LEO</span> AI</div><div class="logo-sub">Voice Intelligence</div></div>
+    </div>
+  </div>
+  <nav>
+    <div class="nav-section">
+      <div class="nav-section-title">Overview</div>
+      <button class="nav-btn active" onclick="showTab('dashboard')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</button>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Outbound</div>
+      <button class="nav-btn" onclick="showTab('calls')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>Call Center</button>
+      <button class="nav-btn" onclick="showTab('campaigns')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Campaigns</button>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Inbound</div>
+      <button class="nav-btn" onclick="showTab('inbound')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>Inbound Routes</button>
+      <button class="nav-btn" onclick="showTab('faq')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Knowledge Base</button>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Management</div>
+      <button class="nav-btn" onclick="showTab('appointments')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Appointments</button>
+      <button class="nav-btn" onclick="showTab('crm')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4-4v2"/><circle cx="12" cy="7" r="4"/></svg>CRM</button>
+      <button class="nav-btn" onclick="showTab('agents')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 00-3 3v1a3 3 0 006 0V5a3 3 0 00-3-3z"/><path d="M19 10h.01"/><path d="M5 10h.01"/><path d="M12 14v4"/><path d="M8 18h8"/></svg>Agent Profiles</button>
+      <button class="nav-btn" onclick="showTab('prompt')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Prompts</button>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">System</div>
+      <button class="nav-btn" onclick="showTab('settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings</button>
+      <button class="nav-btn" onclick="showTab('logs')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>Logs</button>
+    </div>
+  </nav>
+</aside>
+
+<!-- ═══ Main Content ═══ -->
+<div class="main">
+<header class="topbar">
+  <div class="topbar-title" id="topbar-title">Dashboard</div>
+  <div class="topbar-actions">
+    <div class="direction-toggle" id="global-direction">
+      <button class="toggle-btn active" onclick="setDirection('all')">All</button>
+      <button class="toggle-btn" onclick="setDirection('inbound')">Inbound</button>
+      <button class="toggle-btn" onclick="setDirection('outbound')">Outbound</button>
+    </div>
+  </div>
+</header>
+<div class="content">
+
+<!-- ═══ Dashboard Tab ═══ -->
+<div class="tab active" id="tab-dashboard">
+  <div class="stat-grid" id="stats-grid"></div>
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px">
+    <div class="card"><div class="card-header"><div><div class="card-title">Call Volume</div><div class="card-subtitle">Last 14 days</div></div></div><div class="chart-container"><canvas id="chart-timeline"></canvas></div></div>
+    <div class="card"><div class="card-header"><div><div class="card-title">Outcomes</div><div class="card-subtitle">Distribution</div></div></div><div class="chart-container"><canvas id="chart-outcomes"></canvas></div></div>
+  </div>
+</div>
+
+<!-- ═══ Call Center Tab ═══ -->
+<div class="tab" id="tab-calls">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Place Outbound Call</div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Phone (E.164)</label><input id="call-phone" placeholder="+919876543210"></div>
+      <div class="form-group"><label>Lead Name</label><input id="call-name" placeholder="John"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Business Name</label><input id="call-biz" placeholder="Acme Corp"></div>
+      <div class="form-group"><label>Service Type</label><input id="call-svc" placeholder="Demo Call"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Agent Profile</label><select id="call-profile"><option value="">Default</option></select></div>
+      <div class="form-group"><label>&nbsp;</label><button class="btn btn-primary btn-lg" onclick="placeCall()" style="width:100%">Dial Now</button></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <div class="card-header"><div class="card-title">Call History</div><button class="btn btn-ghost btn-sm" onclick="loadCalls()">Refresh</button></div>
+    <table><thead><tr><th>Direction</th><th>Phone</th><th>Lead</th><th>Outcome</th><th>Duration</th><th>Time</th></tr></thead><tbody id="calls-body"></tbody></table>
+  </div>
+</div>
+
+<!-- ═══ Inbound Routes Tab ═══ -->
+<div class="tab" id="tab-inbound">
+  <div class="card">
+    <div class="card-header"><div class="card-title">Create Inbound Route</div></div>
+    <div class="form-row">
+      <div class="form-group"><label>Route Name</label><input id="ib-name" placeholder="Main Support Line"></div>
+      <div class="form-group"><label>Phone Number (E.164)</label><input id="ib-phone" placeholder="+919876543210"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Agent Profile</label><select id="ib-profile"><option value="">Default</option></select></div>
+      <div class="form-group"><label>Custom Greeting</label><input id="ib-greeting" placeholder="Thank you for calling..."></div>
+    </div>
+    <div class="form-group"><label>Custom System Prompt (optional)</label><textarea id="ib-prompt" rows="3" placeholder="Leave empty to use the default inbound prompt"></textarea></div>
+    <button class="btn btn-primary" onclick="createInboundRoute()">Create Inbound Trunk + Route</button>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <div class="card-header"><div class="card-title">Active Inbound Routes</div><button class="btn btn-ghost btn-sm" onclick="loadInboundRoutes()">Refresh</button></div>
+    <table><thead><tr><th>Name</th><th>Phone</th><th>Trunk ID</th><th>Total Calls</th><th>Status</th><th>Actions</th></tr></thead><tbody id="inbound-body"></tbody></table>
+  </div>
+</div>
+
+<!-- ═══ FAQ / Knowledge Base Tab ═══ -->
+<div class="tab" id="tab-faq">
+  <div class="card">
+    <div class="card-header"><div class="card-title">Add FAQ Entry</div></div>
+    <div class="form-row">
+      <div class="form-group"><label>Question</label><input id="faq-q" placeholder="What are your business hours?"></div>
+      <div class="form-group"><label>Category</label><input id="faq-cat" value="general" placeholder="general"></div>
+    </div>
+    <div class="form-group"><label>Answer</label><textarea id="faq-a" rows="3" placeholder="We are open Monday to Friday, 9am to 6pm."></textarea></div>
+    <button class="btn btn-primary" onclick="createFaq()">Add to Knowledge Base</button>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <div class="card-header"><div class="card-title">Knowledge Base</div><button class="btn btn-ghost btn-sm" onclick="loadFaqs()">Refresh</button></div>
+    <table><thead><tr><th>Category</th><th>Question</th><th>Answer</th><th>Actions</th></tr></thead><tbody id="faq-body"></tbody></table>
+  </div>
+</div>
+
+<!-- ═══ Campaigns Tab ═══ -->
+<div class="tab" id="tab-campaigns">
+  <div class="card">
+    <div class="card-header"><div class="card-title">Create Campaign</div></div>
+    <div class="form-row">
+      <div class="form-group"><label>Campaign Name</label><input id="camp-name" placeholder="Q1 Outreach"></div>
+      <div class="form-group"><label>Schedule</label><select id="camp-sched"><option value="once">Once (now)</option><option value="daily">Daily</option><option value="weekdays">Weekdays</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Time (HH:MM)</label><input id="camp-time" value="09:00"></div>
+      <div class="form-group"><label>Delay Between Calls (sec)</label><input id="camp-delay" type="number" value="3"></div>
+    </div>
+    <div class="form-group"><label>Agent Profile</label><select id="camp-profile"><option value="">Default</option></select></div>
+    <div class="form-group"><label>Contacts (JSON array)</label><textarea id="camp-contacts" rows="4" placeholder='[{"phone":"+919876543210","lead_name":"John"}]'></textarea></div>
+    <button class="btn btn-primary" onclick="createCampaign()">Launch Campaign</button>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <div class="card-header"><div class="card-title">Campaigns</div><button class="btn btn-ghost btn-sm" onclick="loadCampaigns()">Refresh</button></div>
+    <table><thead><tr><th>Name</th><th>Schedule</th><th>Contacts</th><th>Dispatched</th><th>Failed</th><th>Status</th><th>Actions</th></tr></thead><tbody id="campaigns-body"></tbody></table>
+  </div>
+</div>
+
+<!-- ═══ Appointments Tab ═══ -->
+<div class="tab" id="tab-appointments">
+  <div class="card">
+    <div class="card-header"><div class="card-title">Appointments</div><button class="btn btn-ghost btn-sm" onclick="loadAppointments()">Refresh</button></div>
+    <table><thead><tr><th>Direction</th><th>Name</th><th>Phone</th><th>Date</th><th>Time</th><th>Service</th><th>Status</th><th>Actions</th></tr></thead><tbody id="appts-body"></tbody></table>
+  </div>
+</div>
+
+<!-- ═══ CRM Tab ═══ -->
+<div class="tab" id="tab-crm">
+  <div class="card">
+    <div class="card-header"><div class="card-title">Contacts</div><button class="btn btn-ghost btn-sm" onclick="loadCRM()">Refresh</button></div>
+    <table><thead><tr><th>Phone</th><th>Name</th><th>Total</th><th>In</th><th>Out</th><th>Booked</th><th>Last Call</th><th>Last Outcome</th></tr></thead><tbody id="crm-body"></tbody></table>
+  </div>
+</div>
+
+<!-- ═══ Agent Profiles Tab ═══ -->
+<div class="tab" id="tab-agents">
+  <div class="card">
+    <div class="card-header"><div class="card-title">Create Agent Profile</div></div>
+    <div class="form-row">
+      <div class="form-group"><label>Name</label><input id="ap-name" placeholder="Sales Agent"></div>
+      <div class="form-group"><label>Mode</label><select id="ap-mode"><option value="both">Both</option><option value="inbound">Inbound Only</option><option value="outbound">Outbound Only</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Voice</label><select id="ap-voice"><option>Aoede</option><option>Charon</option><option>Fenrir</option><option>Kore</option><option>Puck</option></select></div>
+      <div class="form-group"><label>Model</label><select id="ap-model"><option>gemini-3.1-flash-live-preview</option><option>gemini-2.5-flash-preview-native-audio</option><option>gemini-2.0-flash</option></select></div>
+    </div>
+    <div class="form-group"><label>System Prompt (optional)</label><textarea id="ap-prompt" rows="3" placeholder="Custom instructions for this agent..."></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label>Default?</label><select id="ap-default"><option value="0">No</option><option value="1">Yes</option></select></div>
+      <div class="form-group"><label>&nbsp;</label><button class="btn btn-primary" onclick="createProfile()" style="width:100%">Create Profile</button></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <div class="card-header"><div class="card-title">Agent Profiles</div><button class="btn btn-ghost btn-sm" onclick="loadProfiles()">Refresh</button></div>
+    <table><thead><tr><th>Name</th><th>Mode</th><th>Voice</th><th>Model</th><th>Default</th><th>Actions</th></tr></thead><tbody id="profiles-body"></tbody></table>
+  </div>
+</div>
+
+<!-- ═══ Prompts Tab ═══ -->
+<div class="tab" id="tab-prompt">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">System Prompts</div>
+      <div class="direction-toggle">
+        <button class="toggle-btn active" onclick="switchPromptMode('outbound')">Outbound</button>
+        <button class="toggle-btn" onclick="switchPromptMode('inbound')">Inbound</button>
+      </div>
+    </div>
+    <div class="form-group"><textarea id="prompt-editor" rows="20" style="font-family:monospace;font-size:12px"></textarea></div>
+    <div style="display:flex;gap:8px"><button class="btn btn-primary" onclick="savePrompt()">Save Prompt</button><button class="btn btn-danger" onclick="resetPrompt()">Reset to Default</button></div>
+  </div>
+</div>
+
+<!-- ═══ Settings Tab ═══ -->
+<div class="tab" id="tab-settings">
+  <div class="card">
+    <div class="card-header"><div class="card-title">Platform Settings</div><div class="card-subtitle">VPS env vars take priority (shown as source: env)</div></div>
+    <div id="settings-form"></div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+      <button class="btn btn-success" onclick="setupOutboundTrunk()">Create Outbound Trunk</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ Logs Tab ═══ -->
+<div class="tab" id="tab-logs">
+  <div class="card">
+    <div class="card-header"><div class="card-title">System Logs</div><div style="display:flex;gap:8px"><button class="btn btn-ghost btn-sm" onclick="loadLogs()">Refresh</button><button class="btn btn-danger btn-sm" onclick="clearLogs()">Clear All</button></div></div>
+    <table><thead><tr><th>Time</th><th>Level</th><th>Source</th><th>Message</th></tr></thead><tbody id="logs-body"></tbody></table>
+  </div>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /app -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API='';
+let currentDirection=null;
+let currentPromptMode='outbound';
+let timelineChart=null,outcomesChart=null;
+
+function toast(msg,err=false){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(err?' error':'');setTimeout(()=>t.className='toast',3000)}
+async function api(path,opts={}){try{const r=await fetch(API+path,{headers:{'Content-Type':'application/json'},...opts});const d=await r.json();if(!r.ok)throw new Error(d.detail||JSON.stringify(d));return d}catch(e){toast(e.message,true);throw e}}
+
+function showTab(id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  const tab=document.getElementById('tab-'+id);if(tab)tab.classList.add('active');
+  event.target.closest('.nav-btn')?.classList.add('active');
+  const titles={dashboard:'Dashboard',calls:'Call Center',campaigns:'Campaigns',inbound:'Inbound Routes',faq:'Knowledge Base',appointments:'Appointments',crm:'CRM',agents:'Agent Profiles',prompt:'Prompts',settings:'Settings',logs:'Logs'};
+  document.getElementById('topbar-title').textContent=titles[id]||id;
+  const loaders={dashboard:loadDashboard,calls:loadCalls,campaigns:loadCampaigns,inbound:loadInboundRoutes,faq:loadFaqs,appointments:loadAppointments,crm:loadCRM,agents:loadProfiles,prompt:loadPrompt,settings:loadSettings,logs:loadLogs};
+  if(loaders[id])loaders[id]();
+}
+
+function setDirection(d){
+  currentDirection=d==='all'?null:d;
+  document.querySelectorAll('#global-direction .toggle-btn').forEach(b=>{b.classList.toggle('active',b.textContent.toLowerCase()===(d||'all'))});
+  loadDashboard();
+}
+
+// ── Dashboard ──
+async function loadDashboard(){
+  const q=currentDirection?`?direction=${currentDirection}`:'';
+  const s=await api('/api/stats'+q);
+  document.getElementById('stats-grid').innerHTML=`
+    <div class="stat-card purple"><div class="stat-label">Total Calls</div><div class="stat-value">${s.total_calls}</div><div class="stat-sub">${s.inbound_count||0} inbound · ${s.outbound_count||0} outbound</div></div>
+    <div class="stat-card green"><div class="stat-label">Booked</div><div class="stat-value">${s.booked}</div><div class="stat-sub">${s.booking_rate_percent}% conversion</div></div>
+    <div class="stat-card red"><div class="stat-label">Not Interested</div><div class="stat-value">${s.not_interested}</div></div>
+    <div class="stat-card blue"><div class="stat-label">Avg Duration</div><div class="stat-value">${Math.round(s.avg_duration_seconds)}s</div></div>
+    <div class="stat-card cyan"><div class="stat-label">Inbound</div><div class="stat-value">${s.inbound_count||0}</div></div>
+    <div class="stat-card amber"><div class="stat-label">Outbound</div><div class="stat-value">${s.outbound_count||0}</div></div>`;
+  // Timeline chart
+  const tl=s.timeline||[];
+  const labels=tl.map(t=>t.date.slice(5));
+  if(timelineChart)timelineChart.destroy();
+  timelineChart=new Chart(document.getElementById('chart-timeline'),{type:'bar',data:{labels,datasets:[
+    {label:'Inbound',data:tl.map(t=>t.inbound||0),backgroundColor:'rgba(6,182,212,.6)',borderRadius:4,barPercentage:.5},
+    {label:'Outbound',data:tl.map(t=>t.outbound||0),backgroundColor:'rgba(124,92,252,.6)',borderRadius:4,barPercentage:.5}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#a0a0c0',font:{size:11}}}},scales:{x:{stacked:true,ticks:{color:'#6a6a8a'},grid:{color:'#2a2a4a'}},y:{stacked:true,ticks:{color:'#6a6a8a'},grid:{color:'#2a2a4a'}}}}});
+  // Outcomes chart
+  const oc=s.outcomes||{};
+  const oLabels=Object.keys(oc),oData=Object.values(oc);
+  const oColors=['#7c5cfc','#22c55e','#ef4444','#f59e0b','#3b82f6','#ec4899','#06b6d4'];
+  if(outcomesChart)outcomesChart.destroy();
+  outcomesChart=new Chart(document.getElementById('chart-outcomes'),{type:'doughnut',data:{labels:oLabels,datasets:[{data:oData,backgroundColor:oColors.slice(0,oLabels.length),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#a0a0c0',font:{size:11},padding:12}}}}});
+}
+
+// ── Calls ──
+async function loadCalls(){
+  const q=currentDirection?`?direction=${currentDirection}`:'';
+  const rows=await api('/api/calls'+q);
+  document.getElementById('calls-body').innerHTML=rows.length?rows.map(r=>`<tr>
+    <td><span class="badge badge-${r.direction||'outbound'}">${r.direction||'outbound'}</span></td>
+    <td>${r.phone_number}</td><td>${r.lead_name||'-'}</td>
+    <td><span class="badge badge-${r.outcome==='booked'?'green':r.outcome==='not_interested'?'red':'amber'}">${r.outcome||'-'}</span></td>
+    <td>${r.duration_seconds||0}s</td><td>${(r.timestamp||'').slice(0,16)}</td>
+  </tr>`).join(''):'<tr><td colspan="6" class="empty">No calls yet</td></tr>';
+  loadProfileSelects();
+}
+
+async function placeCall(){
+  const phone=document.getElementById('call-phone').value.trim();
+  if(!phone)return toast('Enter a phone number',true);
+  await api('/api/call',{method:'POST',body:JSON.stringify({phone,lead_name:document.getElementById('call-name').value||'there',business_name:document.getElementById('call-biz').value||'our company',service_type:document.getElementById('call-svc').value||'our service',agent_profile_id:document.getElementById('call-profile').value||null})});
+  toast('Call dispatched!');loadCalls();
+}
+
+// ── Inbound Routes ──
+async function loadInboundRoutes(){
+  const rows=await api('/api/inbound-routes');
+  document.getElementById('inbound-body').innerHTML=rows.length?rows.map(r=>`<tr>
+    <td>${r.name}</td><td>${r.phone_number}</td><td style="font-size:11px;color:var(--text3)">${r.trunk_id}</td>
+    <td>${r.total_calls||0}</td>
+    <td><span class="badge badge-${r.status==='active'?'green':'amber'}">${r.status}</span></td>
+    <td><button class="btn btn-danger btn-sm" onclick="deleteInboundRoute('${r.id}')">Delete</button></td>
+  </tr>`).join(''):'<tr><td colspan="6" class="empty">No inbound routes configured</td></tr>';
+  loadProfileSelects();
+}
+
+async function createInboundRoute(){
+  const name=document.getElementById('ib-name').value.trim();
+  const phone=document.getElementById('ib-phone').value.trim();
+  if(!name||!phone)return toast('Name and phone required',true);
+  await api('/api/setup/inbound-trunk',{method:'POST',body:JSON.stringify({name,phone_number:phone,agent_profile_id:document.getElementById('ib-profile').value||null,greeting:document.getElementById('ib-greeting').value||null,system_prompt:document.getElementById('ib-prompt').value||null})});
+  toast('Inbound route created!');loadInboundRoutes();
+}
+
+async function deleteInboundRoute(id){if(confirm('Delete this route?')){await api('/api/inbound-routes/'+id,{method:'DELETE'});toast('Deleted');loadInboundRoutes()}}
+
+// ── FAQ ──
+async function loadFaqs(){
+  const rows=await api('/api/faq');
+  document.getElementById('faq-body').innerHTML=rows.length?rows.map(r=>`<tr>
+    <td><span class="badge badge-blue">${r.category}</span></td>
+    <td>${r.question}</td><td style="max-width:300px;white-space:pre-wrap;font-size:12px">${r.answer}</td>
+    <td><button class="btn btn-danger btn-sm" onclick="deleteFaq('${r.id}')">Delete</button></td>
+  </tr>`).join(''):'<tr><td colspan="4" class="empty">No FAQ entries yet</td></tr>';
+}
+
+async function createFaq(){
+  const q=document.getElementById('faq-q').value.trim();
+  const a=document.getElementById('faq-a').value.trim();
+  if(!q||!a)return toast('Question and answer required',true);
+  await api('/api/faq',{method:'POST',body:JSON.stringify({question:q,answer:a,category:document.getElementById('faq-cat').value||'general',priority:0})});
+  toast('FAQ added!');document.getElementById('faq-q').value='';document.getElementById('faq-a').value='';loadFaqs();
+}
+
+async function deleteFaq(id){if(confirm('Delete this FAQ?')){await api('/api/faq/'+id,{method:'DELETE'});toast('Deleted');loadFaqs()}}
+
+// ── Campaigns ──
+async function loadCampaigns(){
+  const rows=await api('/api/campaigns');
+  document.getElementById('campaigns-body').innerHTML=rows.length?rows.map(r=>{
+    const ct=JSON.parse(r.contacts_json||'[]').length;
+    return `<tr><td>${r.name}</td><td>${r.schedule_type} @ ${r.schedule_time||''}</td><td>${ct}</td>
+    <td>${r.total_dispatched||0}</td><td>${r.total_failed||0}</td>
+    <td><span class="badge badge-${r.status==='active'?'green':r.status==='completed'?'blue':'amber'}">${r.status}</span></td>
+    <td><button class="btn btn-primary btn-sm" onclick="runCampaign('${r.id}')">Run</button> <button class="btn btn-danger btn-sm" onclick="deleteCampaign('${r.id}')">Del</button></td></tr>`
+  }).join(''):'<tr><td colspan="7" class="empty">No campaigns</td></tr>';
+  loadProfileSelects();
+}
+
+async function createCampaign(){
+  const name=document.getElementById('camp-name').value.trim();
+  let contacts;try{contacts=JSON.parse(document.getElementById('camp-contacts').value)}catch(e){return toast('Invalid JSON',true)}
+  if(!name||!contacts.length)return toast('Name and contacts required',true);
+  await api('/api/campaigns',{method:'POST',body:JSON.stringify({name,contacts,schedule_type:document.getElementById('camp-sched').value,schedule_time:document.getElementById('camp-time').value,call_delay_seconds:parseInt(document.getElementById('camp-delay').value)||3,agent_profile_id:document.getElementById('camp-profile').value||null})});
+  toast('Campaign created!');loadCampaigns();
+}
+
+async function runCampaign(id){await api('/api/campaigns/'+id+'/run',{method:'POST'});toast('Campaign running!')}
+async function deleteCampaign(id){if(confirm('Delete campaign?')){await api('/api/campaigns/'+id,{method:'DELETE'});toast('Deleted');loadCampaigns()}}
+
+// ── Appointments ──
+async function loadAppointments(){
+  const rows=await api('/api/appointments');
+  document.getElementById('appts-body').innerHTML=rows.length?rows.map(r=>`<tr>
+    <td><span class="badge badge-${r.direction||'outbound'}">${r.direction||'outbound'}</span></td>
+    <td>${r.name}</td><td>${r.phone}</td><td>${r.date}</td><td>${r.time}</td><td>${r.service}</td>
+    <td><span class="badge badge-${r.status==='booked'?'green':'red'}">${r.status}</span></td>
+    <td>${r.status==='booked'?`<button class="btn btn-danger btn-sm" onclick="cancelAppt('${r.id}')">Cancel</button>`:''}</td>
+  </tr>`).join(''):'<tr><td colspan="8" class="empty">No appointments</td></tr>';
+}
+
+async function cancelAppt(id){if(confirm('Cancel?')){await api('/api/appointments/'+id,{method:'DELETE'});toast('Cancelled');loadAppointments()}}
+
+// ── CRM ──
+async function loadCRM(){
+  const d=await api('/api/crm');
+  const rows=d.data||[];
+  document.getElementById('crm-body').innerHTML=rows.length?rows.map(r=>`<tr>
+    <td>${r.phone_number}</td><td>${r.lead_name||'-'}</td>
+    <td>${r.total_calls}</td><td>${r.inbound||0}</td><td>${r.outbound||0}</td><td>${r.booked||0}</td>
+    <td>${(r.last_call||'').slice(0,16)}</td>
+    <td><span class="badge badge-${r.last_outcome==='booked'?'green':'amber'}">${r.last_outcome||'-'}</span></td>
+  </tr>`).join(''):'<tr><td colspan="8" class="empty">No contacts</td></tr>';
+}
+
+// ── Agent Profiles ──
+async function loadProfiles(){
+  const rows=await api('/api/agent-profiles');
+  document.getElementById('profiles-body').innerHTML=rows.length?rows.map(r=>`<tr>
+    <td>${r.name}</td><td><span class="badge badge-${r.mode==='inbound'?'cyan':r.mode==='outbound'?'purple':'blue'}">${r.mode}</span></td>
+    <td>${r.voice}</td><td style="font-size:11px">${r.model}</td>
+    <td>${r.is_default?'<span class="badge badge-green">Default</span>':''}</td>
+    <td>
+      ${r.is_default?'':`<button class="btn btn-ghost btn-sm" onclick="setDefaultProfile('${r.id}')">Set Default</button>`}
+      <button class="btn btn-danger btn-sm" onclick="deleteProfile('${r.id}')">Del</button>
+    </td>
+  </tr>`).join(''):'<tr><td colspan="6" class="empty">No profiles</td></tr>';
+  loadProfileSelects();
+}
+
+async function createProfile(){
+  const name=document.getElementById('ap-name').value.trim();
+  if(!name)return toast('Name required',true);
+  await api('/api/agent-profiles',{method:'POST',body:JSON.stringify({name,mode:document.getElementById('ap-mode').value,voice:document.getElementById('ap-voice').value,model:document.getElementById('ap-model').value,system_prompt:document.getElementById('ap-prompt').value||null,is_default:document.getElementById('ap-default').value==='1'})});
+  toast('Profile created!');loadProfiles();
+}
+
+async function setDefaultProfile(id){await api('/api/agent-profiles/'+id+'/set-default',{method:'POST'});toast('Default set');loadProfiles()}
+async function deleteProfile(id){if(confirm('Delete profile?')){await api('/api/agent-profiles/'+id,{method:'DELETE'});toast('Deleted');loadProfiles()}}
+
+async function loadProfileSelects(){
+  try{
+    const profiles=await api('/api/agent-profiles');
+    const opts=profiles.map(p=>`<option value="${p.id}">${p.name} (${p.mode})</option>`).join('');
+    ['call-profile','camp-profile','ib-profile'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el){const v=el.value;el.innerHTML='<option value="">Default</option>'+opts;el.value=v}
+    });
+  }catch(e){}
+}
+
+// ── Prompts ──
+function switchPromptMode(mode){
+  currentPromptMode=mode;
+  document.querySelectorAll('#tab-prompt .toggle-btn').forEach(b=>b.classList.toggle('active',b.textContent.toLowerCase()===mode));
+  loadPrompt();
+}
+
+async function loadPrompt(){
+  const d=await api('/api/prompt?mode='+currentPromptMode);
+  document.getElementById('prompt-editor').value=d.prompt;
+}
+
+async function savePrompt(){
+  await api('/api/prompt',{method:'POST',body:JSON.stringify({prompt:document.getElementById('prompt-editor').value,mode:currentPromptMode})});
+  toast('Prompt saved!');
+}
+
+async function resetPrompt(){
+  if(!confirm('Reset to default?'))return;
+  const d=await api('/api/prompt?mode='+currentPromptMode,{method:'DELETE'});
+  document.getElementById('prompt-editor').value=d.prompt;
+  toast('Reset to default');
+}
+
+// ── Settings ──
+async function loadSettings(){
+  const s=await api('/api/settings');
+  const groups={
+    'LiveKit':['LIVEKIT_URL','LIVEKIT_API_KEY','LIVEKIT_API_SECRET'],
+    'Google AI':['GOOGLE_API_KEY','GEMINI_MODEL','GEMINI_TTS_VOICE','USE_GEMINI_REALTIME'],
+    'Vobiz SIP':['VOBIZ_SIP_DOMAIN','VOBIZ_USERNAME','VOBIZ_PASSWORD','VOBIZ_OUTBOUND_NUMBER','OUTBOUND_TRUNK_ID','DEFAULT_TRANSFER_NUMBER'],
+    'Supabase':['SUPABASE_URL','SUPABASE_SERVICE_KEY'],
+    'Twilio SMS':['TWILIO_ACCOUNT_SID','TWILIO_AUTH_TOKEN','TWILIO_FROM_NUMBER'],
+    'S3 Recording':['S3_ACCESS_KEY_ID','S3_SECRET_ACCESS_KEY','S3_ENDPOINT_URL','S3_REGION','S3_BUCKET'],
+    'Cal.com':['CALCOM_API_KEY','CALCOM_EVENT_TYPE_ID','CALCOM_TIMEZONE'],
+    'Other':['DEEPGRAM_API_KEY','ENABLED_TOOLS'],
+  };
+  let html='';
+  for(const[group,keys]of Object.entries(groups)){
+    html+=`<div style="margin-bottom:20px"><h3 style="font-size:13px;color:var(--accent2);margin-bottom:10px;font-weight:600">${group}</h3><div class="form-row" style="grid-template-columns:1fr 1fr">`;
+    for(const k of keys){
+      const cfg=s[k]||{};
+      const val=cfg.value||'';
+      const src=cfg.source||'none';
+      const srcBadge=src==='env'?'<span class="badge badge-green" style="font-size:9px;margin-left:6px">ENV</span>':src==='db'?'<span class="badge badge-blue" style="font-size:9px;margin-left:6px">DB</span>':'';
+      const inputType=k.includes('KEY')||k.includes('SECRET')||k.includes('PASSWORD')||k.includes('TOKEN')?'password':'text';
+      html+=`<div class="form-group"><label>${k}${srcBadge}</label><input type="${inputType}" data-key="${k}" value="${val}" placeholder="${cfg.configured?'(configured)':'Not set'}"></div>`;
+    }
+    html+='</div></div>';
+  }
+  document.getElementById('settings-form').innerHTML=html;
+}
+
+async function saveSettings(){
+  const inputs=document.querySelectorAll('#settings-form input[data-key]');
+  const settings={};
+  inputs.forEach(i=>{if(i.value)settings[i.dataset.key]=i.value});
+  if(!Object.keys(settings).length)return toast('Nothing to save',true);
+  await api('/api/settings',{method:'POST',body:JSON.stringify({settings})});
+  toast('Settings saved!');loadSettings();
+}
+
+async function setupOutboundTrunk(){
+  try{const d=await api('/api/setup/outbound-trunk',{method:'POST'});toast('Outbound trunk created: '+d.trunk_id);loadSettings()}catch(e){}}
+
+// ── Logs ──
+async function loadLogs(){
+  const rows=await api('/api/logs?limit=200');
+  document.getElementById('logs-body').innerHTML=rows.length?rows.map(r=>`<tr>
+    <td style="font-size:11px;white-space:nowrap">${(r.timestamp||'').slice(0,19)}</td>
+    <td><span class="badge badge-${r.level==='error'?'red':r.level==='warning'?'amber':'blue'}">${r.level}</span></td>
+    <td>${r.source}</td><td style="font-size:12px">${r.message}</td>
+  </tr>`).join(''):'<tr><td colspan="4" class="empty">No logs</td></tr>';
+}
+
+async function clearLogs(){if(confirm('Clear all logs?')){await api('/api/logs',{method:'DELETE'});toast('Cleared');loadLogs()}}
+
+// ── Init ──
+loadDashboard();
+</script>
+</body>
+</html>
