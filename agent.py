@@ -148,14 +148,21 @@ def _build_session(tools: list, system_prompt: str) -> AgentSession:
 
             RealtimeClass = _google_realtime or _google_beta_realtime
             realtime_model = RealtimeClass(**_live_kwargs)
-            return AgentSession(realtime_model=realtime_model)
+            # SDK versions differ: try 'model', then 'realtime_model'
+            for _kwarg_name in ("model", "realtime_model"):
+                try:
+                    return AgentSession(**{_kwarg_name: realtime_model})
+                except TypeError:
+                    continue
+            raise TypeError("AgentSession does not accept 'model' or 'realtime_model'")
 
         except Exception as exc:
             logger.error(f"Gemini Live init failed: {exc} — falling back to pipeline")
 
     # ── Pipeline fallback (STT + LLM + TTS) ──────────────────────────────────
     logger.info("Building pipeline session (STT + LLM + TTS)")
-    stt = _deepgram_stt() if _deepgram_stt else None
+    _dg_key = os.getenv("DEEPGRAM_API_KEY", "")
+    stt = _deepgram_stt() if (_deepgram_stt and _dg_key) else None
     llm_inst = _google_llm(model=gemini_model, api_key=api_key) if _google_llm and api_key else None
     tts = None
     return AgentSession(
